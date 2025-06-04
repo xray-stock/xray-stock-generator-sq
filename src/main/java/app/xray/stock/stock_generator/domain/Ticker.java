@@ -18,5 +18,13 @@ public class Ticker {
     private long volume;         // 거래량 (오늘 하루 누적 거래량)
     @NotNull
     private Instant updatedAt;   // 이 데이터가 마지막으로 업데이트된 시각
+
+    public Ticker(String symbol, double price, double changeRate, long volume, Instant updatedAt) {
+        this.symbol = symbol;
+        this.price = price;
+        this.changeRate = changeRate;
+        this.volume = volume;
+        this.updatedAt = updatedAt;
+    }
 }
 
