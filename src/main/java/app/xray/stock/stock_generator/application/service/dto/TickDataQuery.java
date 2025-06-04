@@ -1,5 +1,6 @@
 package app.xray.stock.stock_generator.application.service.dto;
 
+import app.xray.stock.stock_generator.common.validation.SelfValidating;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -8,7 +9,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 @Getter
-public class TickDataQuery {
+public class TickDataQuery extends SelfValidating<TickDataQuery> {
 
     @NotBlank
     private final String symbol;
@@ -18,6 +19,7 @@ public class TickDataQuery {
     public TickDataQuery(String symbol, Instant at) {
         this.symbol = symbol;
         this.at = at.truncatedTo(ChronoUnit.SECONDS);
+        validateSelf();
     }
 
     public static TickDataQuery of(String symbol, Instant at) {

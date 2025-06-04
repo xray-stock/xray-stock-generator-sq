@@ -1,5 +1,6 @@
 package app.xray.stock.stock_generator.domain;
 
+import app.xray.stock.stock_generator.common.validation.SelfValidating;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 
@@ -7,7 +8,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 @Getter
-public class Ticker {
+public class Ticker extends SelfValidating<Ticker> {
     @NotBlank
     private String symbol;       // 예: "AAPL", "005930.KQ" ← 종목코드
     @Positive
@@ -26,6 +27,7 @@ public class Ticker {
         this.changeRate = changeRate;
         this.volume = volume;
         this.updatedAt = updatedAt.truncatedTo(ChronoUnit.SECONDS);
+        validateSelf();
     }
 
     public Ticker() { }
