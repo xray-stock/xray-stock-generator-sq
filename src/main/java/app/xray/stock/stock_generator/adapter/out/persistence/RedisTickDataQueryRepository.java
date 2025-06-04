@@ -27,7 +27,8 @@ public class RedisTickDataQueryRepository implements LoadTickDataPort {
 
     @Override
     public Optional<Ticker> loadTickData(String symbol, Instant at) {
-        String json = redisTemplate.opsForValue().get(generateKey(symbol, at));
+        String key = generateKey(symbol, at);
+        String json = redisTemplate.opsForValue().get(key);
         if (Objects.isNull(json)) {
             return Optional.empty();
         }
@@ -35,7 +36,8 @@ public class RedisTickDataQueryRepository implements LoadTickDataPort {
     }
 
     private static String generateKey(String symbol, Instant at) {
-        return "xray::stock::%s::%s".formatted(symbol, utcFormatter.format(at.atZone(ZoneId.of("UTC"))));
+        String utc = utcFormatter.format(at.atZone(ZoneId.of("UTC")));
+        return "xray::stock::%s::%s".formatted(symbol, utc);
     }
 }
 

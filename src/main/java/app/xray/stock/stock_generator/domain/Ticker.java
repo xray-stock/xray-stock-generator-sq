@@ -4,6 +4,7 @@ import jakarta.validation.constraints.*;
 import lombok.Getter;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 @Getter
 public class Ticker {
@@ -24,7 +25,9 @@ public class Ticker {
         this.price = price;
         this.changeRate = changeRate;
         this.volume = volume;
-        this.updatedAt = updatedAt;
+        this.updatedAt = updatedAt.truncatedTo(ChronoUnit.SECONDS);
     }
+
+    public Ticker() { }
 }
 

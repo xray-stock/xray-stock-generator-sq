@@ -15,11 +15,13 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 class TickDataQueryService implements GetTickDataUseCase {
 
-    private final LoadTickDataPort randomTickDataGenerateQueryRepository;
+//    private final LoadTickDataPort randomTickDataGenerateQueryRepository;
+    private final LoadTickDataPort redisTickDataQueryRepository;
 
     @Override
     public Optional<Ticker> getTickData(TickDataQuery query) {
-        return randomTickDataGenerateQueryRepository.loadTickData(query.getSymbol(), query.getAt());
+//        return randomTickDataGenerateQueryRepository.loadTickData(query.getSymbol(), query.getAt());
+        return redisTickDataQueryRepository.loadTickData(query.getSymbol(), query.getAt());
     }
 }
 
