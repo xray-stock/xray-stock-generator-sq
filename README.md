@@ -1,10 +1,5 @@
 ## 📈 xray-stock-generator-sq
 
-**About:**  
-> SQ 의 주식 생성기 구현 :)
-
----
-
 ### 프로젝트 개요
 
 **xray-stock-generator-sq**는 주식(Stock) 시세 데이터를 생성하고, 이를 Redis에 저장 및 조회할 수 있도록 구현된 시뮬레이터/미들웨어 서비스입니다.  
