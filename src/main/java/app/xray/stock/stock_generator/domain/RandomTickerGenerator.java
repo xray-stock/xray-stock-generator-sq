@@ -24,7 +24,7 @@ public class RandomTickerGenerator {
         double fluctuation = (random.nextDouble() - 0.5) * 2.0;
         double price = Math.round((base + base * fluctuation / 100) * 100.0) / 100.0;
         double changeRate = fluctuation;
-        long volume = random.nextInt(10_000) + 1;
+        long volume = random.nextInt(10000) + 1;
 
         return new Ticker(symbol, price, changeRate, volume, Instant.now());
     }
