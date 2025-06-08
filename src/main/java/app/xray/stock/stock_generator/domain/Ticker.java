@@ -31,5 +31,16 @@ public class Ticker extends SelfValidating<Ticker> {
     }
 
     public Ticker() { }
+
+    @Override
+    public String toString() {
+        return "Ticker{" +
+                "symbol='" + symbol + '\'' +
+                ", price=" + price +
+                ", changeRate=" + changeRate +
+                ", volume=" + volume +
+                ", updatedAt=" + updatedAt +
+                '}';
+    }
 }
 

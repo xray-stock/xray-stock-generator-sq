@@ -1,7 +1,7 @@
 package app.xray.stock.stock_generator.adapter.out.simulator;
 
 import app.xray.stock.stock_generator.application.port.out.LoadTickDataPort;
-import app.xray.stock.stock_generator.domain.RandomTickerGenerator;
+import app.xray.stock.stock_generator.domain.RandomTickerV1Generator;
 import app.xray.stock.stock_generator.domain.Ticker;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,7 +18,7 @@ public class RandomTickDataGenerateQueryRepository implements LoadTickDataPort {
 
     @Override
     public Optional<Ticker> loadTickData(String symbol, Instant at) {
-        RandomTickerGenerator tickerGenerator =  RandomTickerGenerator.builder()
+        RandomTickerV1Generator tickerGenerator =  RandomTickerV1Generator.builder()
                 .random(random)
                 .symbol(symbol)
                 .build();

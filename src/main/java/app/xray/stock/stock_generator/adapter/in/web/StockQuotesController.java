@@ -5,7 +5,6 @@ import app.xray.stock.stock_generator.application.port.in.GetTickDataUseCase;
 import app.xray.stock.stock_generator.application.service.dto.TickDataQuery;
 import app.xray.stock.stock_generator.domain.Ticker;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;

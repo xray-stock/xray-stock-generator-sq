@@ -18,7 +18,7 @@ public class TickDataQuery extends SelfValidating<TickDataQuery> {
 
     public TickDataQuery(String symbol, Instant at) {
         this.symbol = symbol;
-        this.at = at.truncatedTo(ChronoUnit.SECONDS);
+        this.at = at;
         validateSelf();
     }
 

@@ -19,13 +19,13 @@ import java.time.Instant;
  * - 현재 거래량은 누적값이 아니라 1 tick 단위 거래량
  * - basePrice는 현재 고정값으로 사용 중이며, 종목별 적용 가능 (향후 개선 포인트)
  */
-public class RandomTickerGenerator {
+public class RandomTickerV1Generator {
 
     private final SecureRandom random;
     private final String symbol;
 
     @Builder
-    private RandomTickerGenerator(SecureRandom random, String symbol) {
+    private RandomTickerV1Generator(SecureRandom random, String symbol) {
         Assert.notNull(random, "random must not be null.");
         Assert.hasText(symbol, "symbol must not be blank.");
         this.random = random;
@@ -42,7 +42,7 @@ public class RandomTickerGenerator {
 
         // -1.0% ~ +1.0% 의 등락률
         double fluctuationPercent = (random.nextDouble() - 0.5) * 2.0;
-        // 현재가 계산: 기준가 * (1 + 등락률%)
+        // 현재가 계산: 기준가 * (1 + 등락률%) - FIXME 소수점 처리하기!
         double price = basePrice * (1 + fluctuationPercent / 100.0);
         // 등락률(%) 값
         double changeRate = fluctuationPercent;
