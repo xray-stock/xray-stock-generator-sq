@@ -1,5 +1,6 @@
 package app.xray.stock.stock_generator.domain;
 
+import app.xray.stock.stock_generator.common.util.RoundUtil;
 import lombok.Builder;
 import org.springframework.util.Assert;
 
@@ -35,19 +36,23 @@ public class RandomTradeTickGenerator {
     private final FluctuationPercent fluctuationPercent;
     /** 최대 거래량 상한(1 ~ 끝값 포함) */
     private int volumeMaxLimit = 10000;
+    /** 소수점 자리수 */
+    private final int decimalPlaces;
 
     @Builder
     private RandomTradeTickGenerator(
             SecureRandom random,
             String symbol,
             FluctuationPercent fluctuationPercent,
-            Integer volumeMaxLimit) {
+            Integer volumeMaxLimit,
+            int decimalPlaces) {
         Assert.notNull(random, "random must not be null.");
         Assert.hasText(symbol, "symbol must not be blank.");
         Assert.notNull(fluctuationPercent, "fluctuationPercent must not be blank.");
         this.random = random;
         this.symbol = symbol;
         this.fluctuationPercent = fluctuationPercent;
+        this.decimalPlaces = decimalPlaces;
 
         if (volumeMaxLimit != null) {
             if (volumeMaxLimit <= 0) {
@@ -72,7 +77,8 @@ public class RandomTradeTickGenerator {
         double changeRate = fluctuationRandomPercent;
         // 단일 tick 거래량 (1 ~ 10000 랜덤)
         long volume = random.nextInt(volumeMaxLimit) + 1;
-
-        return new TradeTick(symbol, price, changeRate, volume, Instant.now());
+        // 소수점 처리
+        double roundedPrice = RoundUtil.round(price, decimalPlaces);
+        return new TradeTick(symbol, roundedPrice, changeRate, volume, Instant.now());
     }
 }

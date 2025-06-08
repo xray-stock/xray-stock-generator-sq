@@ -30,6 +30,7 @@ class GenerateRandomTradeTickService implements GenerateTradeTickUseCase {
                 .symbol(stockTickerType.getSymbol())
                 .fluctuationPercent(stockTickerType.getFluctuationPercent())
                 .volumeMaxLimit(stockTickerType.getVolumeMaxLimit())
+                .decimalPlaces(stockTickerType.getMarketType().getDecimalPlaces())
                 .build()
                 .generate(tradeTick.getPrice());
 
