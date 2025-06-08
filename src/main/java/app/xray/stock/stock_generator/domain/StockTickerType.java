@@ -52,8 +52,8 @@ public enum StockTickerType {
      * - volume은 0
      * - updatedAt은 Instant.now() 기준
      */
-    public Ticker createInitialTicker() {
-        return new Ticker(symbol, initPrice, 0.0, 0L, Instant.now());
+    public TradeTick createInitialTicker() {
+        return new TradeTick(symbol, initPrice, 0.0, 0L, Instant.now());
     }
 
 

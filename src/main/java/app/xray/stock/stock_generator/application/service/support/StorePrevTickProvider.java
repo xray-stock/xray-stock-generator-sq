@@ -1,6 +1,6 @@
 package app.xray.stock.stock_generator.application.service.support;
 
-import app.xray.stock.stock_generator.domain.Ticker;
+import app.xray.stock.stock_generator.domain.TradeTick;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -9,13 +9,13 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class StorePrevTickProvider {
 
-    private final ConcurrentHashMap<String, Ticker> prevTickMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, TradeTick> prevTickMap = new ConcurrentHashMap<>();
 
-    public void save(Ticker ticker) {
-        prevTickMap.put(ticker.getSymbol(), ticker);
+    public void save(TradeTick tradeTick) {
+        prevTickMap.put(tradeTick.getSymbol(), tradeTick);
     }
 
-    public Optional<Ticker> load(String symbol) {
+    public Optional<TradeTick> load(String symbol) {
         return Optional.ofNullable(prevTickMap.get(symbol));
     }
 

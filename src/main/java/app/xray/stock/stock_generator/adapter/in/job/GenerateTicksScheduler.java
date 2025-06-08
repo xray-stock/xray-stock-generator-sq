@@ -1,9 +1,9 @@
 package app.xray.stock.stock_generator.adapter.in.job;
 
-import app.xray.stock.stock_generator.application.port.in.GenerateTickerUseCase;
-import app.xray.stock.stock_generator.application.port.out.SaveTickDataPort;
+import app.xray.stock.stock_generator.application.port.in.GenerateTradeTickUseCase;
+import app.xray.stock.stock_generator.application.port.out.SaveTradeTickDataPort;
 import app.xray.stock.stock_generator.domain.StockTickerType;
-import app.xray.stock.stock_generator.domain.Ticker;
+import app.xray.stock.stock_generator.domain.TradeTick;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -13,24 +13,24 @@ import java.util.List;
 
 @Log4j2
 @Component
-public class TickerGenerateScheduler {
+public class GenerateTicksScheduler {
 
-    private final GenerateTickerUseCase tickerGenerator;
-    private final SaveTickDataPort saveTickDataPort;
+    private final GenerateTradeTickUseCase tickerGenerator;
+    private final SaveTradeTickDataPort saveTradeTickDataPort;
 
     private final List<StockTickerType> stockTickerTypes = Arrays.stream(StockTickerType.values()).toList();
 
-    public TickerGenerateScheduler(GenerateTickerUseCase tickerGenerator,
-                                   SaveTickDataPort saveTickDataPort) {
+    public GenerateTicksScheduler(GenerateTradeTickUseCase tickerGenerator,
+                                  SaveTradeTickDataPort saveTradeTickDataPort) {
         this.tickerGenerator = tickerGenerator;
-        this.saveTickDataPort = saveTickDataPort;
+        this.saveTradeTickDataPort = saveTradeTickDataPort;
     }
 
     @Scheduled(fixedRate = 1000)
     public void generate() {
         for (StockTickerType stockTickerType : stockTickerTypes) { // TODO 대용량 처리하려면?
-            Ticker ticker = tickerGenerator.generate(stockTickerType);
-            saveTickDataPort.saveTickData(ticker);
+            TradeTick tradeTick = tickerGenerator.generate(stockTickerType);
+            saveTradeTickDataPort.saveTradeTick(tradeTick);
         }
         log.info("[TickerGenerateScheduler.generate] saved! total count: {}", stockTickerTypes.size());
     }

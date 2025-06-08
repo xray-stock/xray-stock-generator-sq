@@ -26,7 +26,7 @@ import java.time.Instant;
  * - 이전 가격(previousPrice)은 외부 호출자가 관리하며, 이를 기반으로 다음 tick 가격을 생성함
  * </pre>
  */
-public class RandomTickerV2Generator {
+public class RandomTradeTickGenerator {
 
     private final SecureRandom random;
     /** 종목 심볼 */
@@ -37,7 +37,7 @@ public class RandomTickerV2Generator {
     private int volumeMaxLimit = 10000;
 
     @Builder
-    private RandomTickerV2Generator(
+    private RandomTradeTickGenerator(
             SecureRandom random,
             String symbol,
             FluctuationPercent fluctuationPercent,
@@ -63,7 +63,7 @@ public class RandomTickerV2Generator {
      * @param previousPrice 직전 tick 가격 (이 값을 기준으로 현재 tick 가격을 생성)
      * @return 새로 생성된 Ticker 객체
      */
-    public Ticker generate(double previousPrice) {
+    public TradeTick generate(double previousPrice) {
 
         double fluctuationRandomPercent = fluctuationPercent.generateRandomPercent(random);// ((random.nextDouble() - 0.5) * 2.0);
         // 등락률 적용하여 금액 계산
@@ -73,6 +73,6 @@ public class RandomTickerV2Generator {
         // 단일 tick 거래량 (1 ~ 10000 랜덤)
         long volume = random.nextInt(volumeMaxLimit) + 1;
 
-        return new Ticker(symbol, price, changeRate, volume, Instant.now());
+        return new TradeTick(symbol, price, changeRate, volume, Instant.now());
     }
 }

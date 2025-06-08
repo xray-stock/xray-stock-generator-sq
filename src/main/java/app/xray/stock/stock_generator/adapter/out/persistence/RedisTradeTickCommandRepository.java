@@ -1,10 +1,9 @@
 package app.xray.stock.stock_generator.adapter.out.persistence;
 
-import app.xray.stock.stock_generator.adapter.out.persistence.support.RedisTickKeyHelper;
 import app.xray.stock.stock_generator.adapter.out.persistence.support.RedisTickStreamHelper;
-import app.xray.stock.stock_generator.application.port.out.SaveTickDataPort;
+import app.xray.stock.stock_generator.application.port.out.SaveTradeTickDataPort;
 import app.xray.stock.stock_generator.common.util.DataSerializer;
-import app.xray.stock.stock_generator.domain.Ticker;
+import app.xray.stock.stock_generator.domain.TradeTick;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.redis.connection.RedisStreamCommands.XAddOptions;
@@ -18,24 +17,18 @@ import java.util.Collections;
 @Log4j2
 @Repository
 @RequiredArgsConstructor
-public class RedisTickDataCommandRepository implements SaveTickDataPort {
+public class RedisTradeTickCommandRepository implements SaveTradeTickDataPort {
 
     private final StringRedisTemplate redisTemplate;
 
     @Override
-    public void saveTickData(Ticker ticker) {
-        saveStream(ticker);
+    public void saveTradeTick(TradeTick tradeTick) {
+        saveStream(tradeTick);
     }
 
-    private void saveValue(Ticker ticker) {
-        String key = RedisTickKeyHelper.generateKey(ticker.getSymbol(), ticker.getUpdatedAt());
-        String json = DataSerializer.serialize(ticker);
-        redisTemplate.opsForValue().set(key, json, RedisTickKeyHelper.DEFAULT_TTL);
-    }
-
-    public void saveStream(Ticker ticker) {
-        String key = RedisTickStreamHelper.generateStreamKey(ticker.getSymbol());
-        String json = DataSerializer.serialize(ticker);
+    public void saveStream(TradeTick tradeTick) {
+        String key = RedisTickStreamHelper.generateStreamKey(tradeTick.getSymbol());
+        String json = DataSerializer.serialize(tradeTick);
 
         try {
             XAddOptions options = XAddOptions.maxlen(10000).approximateTrimming(true);
@@ -45,7 +38,7 @@ public class RedisTickDataCommandRepository implements SaveTickDataPort {
                             "payload", json)), options);
 
             log.debug("[RedisTickDataCommandRepository.saveStream] Saved tick to stream={}, id={}, ticker={}", key,
-                    recordId.getValue(), ticker);
+                    recordId.getValue(), tradeTick);
         } catch (Exception e) {
             log.error("[RedisTickDataCommandRepository.saveStream] Failed to save tick to stream {}", key, e);
             throw e;

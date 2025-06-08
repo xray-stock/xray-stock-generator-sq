@@ -8,7 +8,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 @Getter
-public class Ticker extends SelfValidating<Ticker> {
+public class TradeTick extends SelfValidating<TradeTick> {
     @NotBlank
     private String symbol;       // 예: "AAPL", "005930.KQ" ← 종목코드
     @Positive
@@ -21,7 +21,7 @@ public class Ticker extends SelfValidating<Ticker> {
     @NotNull
     private Instant updatedAt;   // 이 데이터가 마지막으로 업데이트된 시각
 
-    public Ticker(String symbol, double price, double changeRate, long volume, Instant updatedAt) {
+    public TradeTick(String symbol, double price, double changeRate, long volume, Instant updatedAt) {
         this.symbol = symbol;
         this.price = price;
         this.changeRate = changeRate;
@@ -30,7 +30,7 @@ public class Ticker extends SelfValidating<Ticker> {
         validateSelf();
     }
 
-    public Ticker() { }
+    public TradeTick() { }
 
     @Override
     public String toString() {

@@ -1,10 +1,9 @@
 package app.xray.stock.stock_generator.adapter.out.persistence;
 
-import app.xray.stock.stock_generator.adapter.out.persistence.support.RedisTickKeyHelper;
 import app.xray.stock.stock_generator.adapter.out.persistence.support.RedisTickStreamHelper;
-import app.xray.stock.stock_generator.application.port.out.LoadTickDataPort;
+import app.xray.stock.stock_generator.application.port.out.LoadTradeTickDataPort;
 import app.xray.stock.stock_generator.common.util.DataSerializer;
-import app.xray.stock.stock_generator.domain.Ticker;
+import app.xray.stock.stock_generator.domain.TradeTick;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Range;
 import org.springframework.data.redis.connection.Limit;
@@ -21,7 +20,7 @@ import java.util.Optional;
 @Repository
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class RedisTickDataQueryRepository implements LoadTickDataPort {
+public class RedisTradeTickQueryRepository implements LoadTradeTickDataPort {
 
     private static final String FIELD_PAYLOAD = "payload";
     private static final String EARLIEST_ID   = "0-0";
@@ -29,20 +28,11 @@ public class RedisTickDataQueryRepository implements LoadTickDataPort {
     private final StringRedisTemplate redisTemplate;
 
     @Override
-    public Optional<Ticker> loadTickData(String symbol, Instant at) {
+    public Optional<TradeTick> loadTradeTick(String symbol, Instant at) {
         return findStreamLatestTicker(symbol, at);
     }
 
-    private Optional<Ticker> findValueTicker(String symbol, Instant at) {
-        String key = RedisTickKeyHelper.generateKey(symbol, at);
-        String json = redisTemplate.opsForValue().get(key);
-        if (Objects.isNull(json)) {
-            return Optional.empty();
-        }
-        return Optional.of(DataSerializer.deserialize(json, Ticker.class));
-    }
-
-    Optional<Ticker> findStreamLatestTicker(String symbol, Instant at) {
+    Optional<TradeTick> findStreamLatestTicker(String symbol, Instant at) {
         String key = RedisTickStreamHelper.generateStreamKey(symbol);
         String endId = RedisTickStreamHelper.toStreamId(at);
 
@@ -58,7 +48,7 @@ public class RedisTickDataQueryRepository implements LoadTickDataPort {
                 .getValue()
                 .get(FIELD_PAYLOAD);
 
-        return Optional.of(DataSerializer.deserialize(json, Ticker.class));
+        return Optional.of(DataSerializer.deserialize(json, TradeTick.class));
     }
 }
 
