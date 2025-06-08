@@ -8,7 +8,7 @@ public class RedisTickStreamHelper {
      * 스트림 키: ex) xray:stock:MSFT:stream
      */
     public static String generateStreamKey(String symbol) {
-        return "xray:stock:%s:stream".formatted(symbol);
+        return "xray::stock::%s::stream".formatted(symbol);
     }
 
     /**

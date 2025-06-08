@@ -28,7 +28,7 @@ import java.util.Random;
  */
 
 @Getter
-final class FluctuationPercent {
+public class FluctuationPercent {
 
     private final double percent;
 
