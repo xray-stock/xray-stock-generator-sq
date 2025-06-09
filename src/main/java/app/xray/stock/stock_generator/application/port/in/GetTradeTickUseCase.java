@@ -12,5 +12,5 @@ public interface GetTradeTickUseCase {
 
     default Optional<TradeTick> getTickData(String symbol) {
         return getTickData(TickDataQuery.of(symbol, Instant.now()));
-    };
+    }
 }

@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
+import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +24,7 @@ class GenerateRandomTradeTickService implements GenerateTradeTickUseCase {
         // 이전 값 메모리 로딩
         TradeTick tradeTick = storePrevTickProvider.load(stockTickerType.getSymbol())
                 .orElseGet(stockTickerType::createInitialTicker);
+        Instant now = Instant.now();
 
         // 랜덤 값 생성
         TradeTick generated = RandomTradeTickGenerator.builder()
@@ -32,7 +34,7 @@ class GenerateRandomTradeTickService implements GenerateTradeTickUseCase {
                 .volumeMaxLimit(stockTickerType.getVolumeMaxLimit())
                 .decimalPlaces(stockTickerType.getMarketType().getDecimalPlaces())
                 .build()
-                .generate(tradeTick.getPrice());
+                .generate(tradeTick.getPrice(), now);
 
         // 메모리 저장 처리
         storePrevTickProvider.save(generated);

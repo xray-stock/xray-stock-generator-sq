@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -19,6 +20,16 @@ public class RandomTradeTickGenerateQueryRepository implements LoadTradeTickData
 
     @Override
     public Optional<TradeTick> loadTradeTick(String symbol, Instant at) {
+        TradeTick tradeTick = generateTradeTick(symbol, at);
+        return Optional.of(tradeTick);
+    }
+
+    @Override
+    public List<TradeTick> loadTradeTicks(String symbol, Instant from, Instant to, int limit) {
+        return List.of(generateTradeTick(symbol, from));
+    }
+
+    private TradeTick generateTradeTick(String symbol, Instant at) {
         StockTickerType tickerType = StockTickerType.from(symbol);
         RandomTradeTickGenerator tickerGenerator =  RandomTradeTickGenerator.builder()
                 .random(random)
@@ -26,6 +37,6 @@ public class RandomTradeTickGenerateQueryRepository implements LoadTradeTickData
                 .fluctuationPercent(tickerType.getFluctuationPercent())
                 .volumeMaxLimit(tickerType.getVolumeMaxLimit())
                 .build();
-        return Optional.of(tickerGenerator.generate(tickerType.getInitPrice()));
+        return tickerGenerator.generate(tickerType.getInitPrice(), at);
     }
 }

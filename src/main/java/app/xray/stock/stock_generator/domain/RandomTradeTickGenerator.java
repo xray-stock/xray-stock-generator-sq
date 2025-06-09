@@ -68,7 +68,7 @@ public class RandomTradeTickGenerator {
      * @param previousPrice 직전 tick 가격 (이 값을 기준으로 현재 tick 가격을 생성)
      * @return 새로 생성된 Ticker 객체
      */
-    public TradeTick generate(double previousPrice) {
+    public TradeTick generate(double previousPrice, Instant at) {
 
         double fluctuationRandomPercent = fluctuationPercent.generateRandomPercent(random);// ((random.nextDouble() - 0.5) * 2.0);
         // 등락률 적용하여 금액 계산
@@ -79,6 +79,6 @@ public class RandomTradeTickGenerator {
         long volume = random.nextInt(volumeMaxLimit) + 1;
         // 소수점 처리
         double roundedPrice = RoundUtil.round(price, decimalPlaces);
-        return new TradeTick(symbol, roundedPrice, changeRate, volume, Instant.now());
+        return new TradeTick(symbol, roundedPrice, changeRate, volume, at);
     }
 }

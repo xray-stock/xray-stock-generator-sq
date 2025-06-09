@@ -46,5 +46,18 @@ public class RedisTradeTickQueryRepository implements LoadTradeTickDataPort {
 
         return Optional.of(DataSerializer.deserialize(json, TradeTick.class));
     }
+
+    @Override
+    public List<TradeTick> loadTradeTicks(String symbol, Instant from, Instant to, int limit) {
+        String key = RedisTickStreamHelper.generateStreamKey(symbol);
+        String startId = RedisTickStreamHelper.toStreamId(from);
+        String endId = RedisTickStreamHelper.toStreamId(to);
+
+        // 범위 조회 후 TradeTick 리스트 변환
+        List<MapRecord<String, String, String>> records = redisTemplate.<String, String>opsForStream()
+                .reverseRange(key, Range.closed(startId, endId), Limit.limit().count(limit));
+        return records.stream()
+                .map(each -> DataSerializer.deserialize(each.getValue().get(FIELD_PAYLOAD), TradeTick.class)).toList();
+    }
 }
 
