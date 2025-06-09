@@ -1,5 +1,6 @@
 package app.xray.stock.stock_generator.domain;
 
+import app.xray.stock.stock_generator.common.exception.NotFoundSymbolException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -45,17 +46,9 @@ public enum StockTickerType {
     private final int volumeMaxLimit;
     private final double initPrice;
 
-
-    /**
-     * 초기 Ticker 객체를 생성합니다.
-     * - changeRate는 0.0
-     * - volume은 0
-     * - updatedAt은 Instant.now() 기준
-     */
-    public TradeTick createInitialTicker() {
-        return new TradeTick(symbol, initPrice, 0.0, 0L, Instant.now());
+    public static StockTickerType from(String symbol) {
+        return StockTickerType.findBySymbol(symbol).orElseThrow(() -> new NotFoundSymbolException(symbol));
     }
-
 
     /**
      * symbol(종목 코드) 기준으로 StockTicker enum 값을 조회합니다.
@@ -67,6 +60,16 @@ public enum StockTickerType {
         return Arrays.stream(values())
                 .filter(ticker -> ticker.getSymbol().equals(symbol))
                 .findFirst();
+    }
+
+    /**
+     * 초기 Ticker 객체를 생성합니다.
+     * - changeRate는 0.0
+     * - volume은 0
+     * - updatedAt은 Instant.now() 기준
+     */
+    public TradeTick createInitialTicker() {
+        return new TradeTick(symbol, initPrice, 0.0, 0L, Instant.now());
     }
 
     /**

@@ -19,13 +19,13 @@ public class RandomTradeTickGenerateQueryRepository implements LoadTradeTickData
 
     @Override
     public Optional<TradeTick> loadTradeTick(String symbol, Instant at) {
-        StockTickerType stockTickerType = StockTickerType.findBySymbol(symbol).orElseThrow();
+        StockTickerType tickerType = StockTickerType.from(symbol);
         RandomTradeTickGenerator tickerGenerator =  RandomTradeTickGenerator.builder()
                 .random(random)
-                .symbol(stockTickerType.getSymbol())
-                .fluctuationPercent(stockTickerType.getFluctuationPercent())
-                .volumeMaxLimit(stockTickerType.getVolumeMaxLimit())
+                .symbol(tickerType.getSymbol())
+                .fluctuationPercent(tickerType.getFluctuationPercent())
+                .volumeMaxLimit(tickerType.getVolumeMaxLimit())
                 .build();
-        return Optional.of(tickerGenerator.generate(stockTickerType.getInitPrice()));
+        return Optional.of(tickerGenerator.generate(tickerType.getInitPrice()));
     }
 }
