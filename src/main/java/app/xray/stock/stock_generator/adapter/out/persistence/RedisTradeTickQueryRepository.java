@@ -29,10 +29,6 @@ public class RedisTradeTickQueryRepository implements LoadTradeTickDataPort {
 
     @Override
     public Optional<TradeTick> loadTradeTick(String symbol, Instant at) {
-        return findStreamLatestTicker(symbol, at);
-    }
-
-    Optional<TradeTick> findStreamLatestTicker(String symbol, Instant at) {
         String key = RedisTickStreamHelper.generateStreamKey(symbol);
         String endId = RedisTickStreamHelper.toStreamId(at);
 

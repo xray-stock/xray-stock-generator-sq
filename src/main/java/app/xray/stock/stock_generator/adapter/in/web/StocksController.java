@@ -17,15 +17,16 @@ public class StocksController {
 
     private final GetTradeTickUseCase getTradeTickUseCase;
 
-    @GetMapping("/{symbol}/ticks")
-    public TradeTickData read(@PathVariable("symbol") String symbol, @RequestParam(required = false) Instant at) {
-        if (at == null) {
-            at = Instant.now();
-        }
-        Optional<TradeTick> tickData = getTradeTickUseCase.getTickData(TickDataQuery.of(symbol, at));
-        return tickData.isPresent()
-                ? TradeTickData.of(tickData.get(), at)
-                : TradeTickData.empty(symbol, at);
+    @GetMapping("/{symbol}/trade-ticks")
+    public TradeTickData readAt(@PathVariable("symbol") String symbol, @RequestParam Instant at) {
+        TickDataQuery query = TickDataQuery.of(symbol, at);
+        return getTradeTickUseCase.getTickData(query).map(tradeTick -> TradeTickData.of(tradeTick, at)).orElseGet(() -> TradeTickData.empty(symbol, at));
     }
 
+    @GetMapping("/{symbol}/trade-ticks/latest")
+    public TradeTickData readLatest(@PathVariable("symbol") String symbol) {
+        TickDataQuery query = TickDataQuery.of(symbol, Instant.now());
+        Optional<TradeTick> tickData = getTradeTickUseCase.getTickData(query);
+        return tickData.map(tradeTick -> TradeTickData.of(tradeTick, query.getAt())).orElseGet(() -> TradeTickData.empty(symbol, query.getAt()));
+    }
 }
