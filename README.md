@@ -2,80 +2,101 @@
 
 ### 프로젝트 개요
 
-**xray-stock-generator-sq**는 실시간 가상 주식 시세 데이터를 자동 생성하고, Redis를 활용해 저장/조회하는 미들웨어 서비스입니다.  
-테스트, 개발, 데모 환경에서 실제와 유사한 주식 Ticker 데이터를 API로 제공하는 것이 목적입니다.
+**xray-stock-generator-sq**는 다양한 종목의 가상 주식 시세 데이터를 실시간으로 생성하고, 이를 Redis를 통해 저장·조회하는 미들웨어 서비스입니다. 테스트, 개발, 데모 환경에서 실제 주식시장과 유사한 Ticker 데이터를 API로 간편하게 제공하는 것이 목적입니다.
 
 ---
 
-### 개발 및 구현 내용 (2025년 6월 기준 최신)
+### 시스템 구조 및 주요 기능
 
-#### 1. 가상 주식 시세(Ticker) 생성 로직
-- **종목별 특성값 Enum화**  
-  - `StockTickerType` enum에서 각 종목(삼성전자, Apple, Tesla 등)의 시장(KOSPI, NASDAQ), 심볼, 소숫점 자리수, 변동폭(±N%), 최대 거래량, 초기 가격 등을 통합 관리합니다.
-  - 심볼 기반 조회 및 초기 Ticker 객체 생성 지원.
-- **랜덤 Ticker 생성기**  
-  - `RandomTickerV1Generator` 클래스를 통해 각 Tick(1초 단위 등)마다 변동폭에 맞는 랜덤 가격·등락률·거래량 생성.
-  - 변동폭(`FluctuationPercent`)은 Value Object로 설계되어 종목별로 ±1%~3% 내외 등락률을 유연하게 설정 가능.
+#### 1. 도메인 및 시뮬레이션 설계
 
-#### 2. 저장/조회 구조 및 확장성
-- **Port & Repository Pattern 도입**  
-  - 저장/조회 인터페이스(`SaveTickDataPort`, `LoadTickDataPort`)와 실제 구현(`RedisTickDataCommandRepository`, `RedisTickDataQueryRepository`)를 분리해 테스트 용이성과 확장성 확보.
-- **Redis 기반 데이터 저장/조회**  
-  - 생성된 Ticker는 Redis에 저장되며, 시점별/종목별로 신속히 조회 가능.
-- **Jackson 기반 직렬화/역직렬화**  
-  - `DataSerializer` 유틸을 통해 Ticker 객체를 JSON으로 변환/복원. Java Time 등 특수 타입 지원.
+- **종목 특성 관리**  
+  각 주식 종목(삼성전자, Apple, Tesla 등)은 `StockTickerType` enum으로 통합 관리됩니다.  
+  종목마다 시장(KOSPI/NASDAQ), 심볼, 소숫점 자리수, 변동폭(±N%), 최대 거래량, 초기 가격 등 시세 시뮬레이션에 필요한 모든 파라미터가 Enum에 정의되어 있습니다.
+
+- **Tick 데이터 구조**  
+  도메인 객체 `TradeTick`은 종목코드, 가격, 등락률, 거래량, 마지막 갱신시각을 포함하여, 실제 주식 거래 Tick 데이터를 모방합니다.
+
+- **등락률(변동폭) 유연성**  
+  각 종목의 시세 변동폭(±N%)은 `FluctuationPercent` Value Object로 관리되어, 종목별·상황별로 실제 시장과 유사한 변동성을 시뮬레이션할 수 있습니다.
+
+#### 2. 시세 생성 및 저장
+
+- **랜덤 Tick 생성기**  
+  `RandomTickerV1Generator`가 각 Tick마다 종목별 정책(변동폭, 소숫점 등)에 따라 가격·등락률·거래량을 생성합니다.
+
+- **주기적 자동 생성**  
+  `TickerGenerateScheduler`가 1초마다 모든 종목별로 새로운 Tick 데이터를 만들어 Redis에 저장합니다.
+
+- **데이터 저장/조회 계층 분리**  
+  저장/조회 인터페이스(Port)와 실제 구현(Repository, Redis 연동)을 분리하여, 확장성과 테스트 용이성을 높였습니다.
+
+- **Redis Stream 활용**  
+  Redis는 Stream 구조로 사용되어, 시점별·구간별 Tick 데이터를 빠르고 효율적으로 저장·조회합니다.
 
 #### 3. API 및 외부 노출
-- **RESTful API 제공**  
-  - `/api/v1/stocks/{symbol}/tickers` 엔드포인트에서 실시간(또는 특정 시점) Ticker 조회.
-  - 데이터 부재 시 빈 데이터 응답.
-- **Spring Boot 기반 서비스**  
-  - `StockGeneratorApplication`이 엔트리포인트, 스케줄러/컨트롤러/서비스 계층이 도메인-어댑터 구조로 분리.
 
-#### 4. 주요 클래스 구조 (폴더링)
+- **RESTful API 구조**  
+  API는 `/api/v1/stocks/{symbol}/trade-ticks` 경로를 기준으로, 다양한 데이터 조회 방식을 지원합니다.
+    - `/at?at=시각`: 특정 시점의 Tick 데이터
+    - `/range?from=시작시각&to=종료시각`: 구간 내 Tick 데이터 리스트
+    - `/latest`: 가장 최근의 Tick 데이터
+
+- **유스케이스 기반 서비스 계층**  
+  각 API는 서비스 계층(UseCase)을 통해 도메인·저장소 분리 및 비즈니스 로직 캡슐화를 달성합니다.
+
+- **일관된 예외 처리**  
+  존재하지 않는 종목(symbol) 등 주요 예외 상황은 전역 컨트롤러 어드바이스에서 일관된 JSON 에러 응답으로 처리합니다.
+
+#### 4. 전체 패키지 구조
+
 ```
 src/main/java/app/xray/stock/stock_generator/
-├── StockGeneratorApplication.java
-├── domain/
-│   ├── Ticker.java                        # 시세 도메인 (심볼, 가격, 변동률, 거래량, 갱신시각)
-│   ├── StockTickerType.java               # 종목별 특성값 Enum
-│   ├── FluctuationPercent.java            # 변동폭 Value Object
-│   └── RandomTickerV1Generator.java       # 랜덤 데이터 생성기
+├── domain/                   # 도메인 객체 및 Enum, Value Object 등
+│   ├── TradeTick.java
+│   ├── StockTickerType.java
+│   └── FluctuationPercent.java
 ├── adapter/
 │   ├── in/
-│   │   ├── job/TickerGenerateScheduler.java   # 주기적 Ticker 생성/저장
-│   │   └── web/StockQuotesController.java    # REST API
+│   │   ├── job/TickerGenerateScheduler.java   # 자동 Tick 생성 스케줄러
+│   │   └── web/StocksController.java         # REST API 컨트롤러
 │   ├── out/
-│   │   ├── persistence/
-│   │   │   ├── RedisTickDataCommandRepository.java # Redis 저장
-│   │   │   └── RedisTickDataQueryRepository.java   # Redis 조회
-│   │   └── simulator/RandomTickDataGenerateQueryRepository.java # (테스트용) 랜덤 데이터 조회
-├── common/util/
-│   └── DataSerializer.java                 # JSON 직렬화/역직렬화
+│   │   ├── persistence/RedisTradeTickQueryRepository.java   # Redis 저장/조회
+│   │   └── simulator/RandomTickDataGenerateQueryRepository.java # 테스트용
 ├── application/
-│   ├── port/in/                            # 유스케이스 인터페이스
-│   ├── port/out/                           # 저장/조회 인터페이스
-│   └── service/
-│       └── TickDataQueryService.java       # 시세 데이터 조회 서비스
+│   ├── port/in/                              # 유스케이스 인터페이스
+│   ├── port/out/                             # 저장/조회 인터페이스
+│   └── service/                              # 서비스 구현
+├── common/
+│   ├── util/DataSerializer.java              # 직렬화/역직렬화
+│   ├── util/RoundUtil.java                   # 소숫점 반올림 등
+│   └── advice/GlobalControllerAdvice.java    # 전역 예외처리
 ```
 
-#### 5. 동작 과정 요약
-1. **Ticker 생성**:  
-   - `TickerGenerateScheduler`가 1초마다 종목별로 랜덤 시세 생성 → Redis에 저장.
-2. **API 제공**:  
-   - `/api/v1/stocks/{symbol}/tickers` 요청 시 Redis에서 해당 종목의 최신/지정 시점 데이터를 반환.
-3. **도메인/유틸**:  
-   - `Ticker`는 심볼, 가격, 변동률, 거래량, 갱신시각을 보유.
-   - `DataSerializer`로 JSON 직렬화/역직렬화.
+---
+
+### 동작 흐름
+
+1. **Tick 데이터 생성**  
+   `TickerGenerateScheduler`가 1초마다 종목별로 랜덤 시세 데이터를 생성하여 Redis에 저장합니다.
+2. **API 데이터 제공**  
+   - `/trade-ticks/latest`: 최신 Tick 조회
+   - `/trade-ticks/at?at=시각`: 특정 시점 Tick 조회
+   - `/trade-ticks/range?from=시작&to=끝`: 구간별 Tick 데이터 조회  
+   각 API 요청은 서비스 계층의 유스케이스를 거쳐, 도메인 객체를 응답용 DTO로 변환하여 반환합니다.
+3. **예외 상황**  
+   존재하지 않는 종목 요청시, 글로벌 예외 처리기로 404 에러 및 상세 메시지를 반환합니다.
 
 ---
 
 ### 예시 API
 
 ```http
-GET /api/v1/stocks/AAPL/tickers
+GET /api/v1/stocks/AAPL/trade-ticks/latest
+GET /api/v1/stocks/AAPL/trade-ticks/at?at=2025-06-12T00:00:00Z
+GET /api/v1/stocks/AAPL/trade-ticks/range?from=2025-06-12T00:00:00Z&to=2025-06-12T01:00:00Z
 ```
-- 응답: AAPL(Apple) 가상 실시간 시세 JSON
+각각 최신, 특정 시점, 구간의 가상 시세 데이터(JSON) 반환
 
 ---
 
@@ -100,5 +121,4 @@ GET /api/v1/stocks/AAPL/tickers
 
 ### 참고
 
-- 본 프로젝트는 실제 투자용이 아닌, 테스트/데모/개발 환경용 가상 주식 시세 데이터 시뮬레이터입니다.
-
+- 본 프로젝트는 실제 투자 목적이 아닌, 테스트/데모/개발 환경용 가상 주식 시세 데이터 시뮬레이터입니다.
